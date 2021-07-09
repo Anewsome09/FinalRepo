@@ -11,7 +11,7 @@ public class ReturnTypes {
         //call the other method here
         boolean b = rt.returnBoolean();
 
-        System.out.println("The output is" + b);
+        System.out.println("The output is " + b);
     }
 
     //create your first method here
