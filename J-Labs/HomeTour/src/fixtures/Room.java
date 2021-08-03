@@ -11,8 +11,7 @@ public class Room extends Fixture {
 	
 	
 	private Room[] exits = new Room[4];
-
-	
+		
 	public Room getNorthExit() {
 		return exits[0];
 	}
