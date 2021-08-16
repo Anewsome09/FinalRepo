@@ -17,20 +17,25 @@ public class AccountDOA {
 	
 	public int id;
 	public static String name;
-	public static double balance;
+	public float balance;
+	public AModel AModel;
 	public static String customer;
 	public static String type;
 	private static String password;
-	public static char activate = 'Y';
+	public static String emp;
+	public static String activate = "Y";
 	private static String accTable = "select * from bankapp.customer_acc";
-	private static String fullTable = "SELECT * from bankapp.customer_login\r\n"
-			+ "	INNER JOIN bankapp.customer_acc\r\n"
-			+ "	ON bankapp.customer_login.c_id = bankapp.customer_acc.acc_id";
+	private static String fullTable = "SELECT * from bankapp.customer\r\n"
+			+ "	INNER JOIN bankapp.customer_login\r\n"
+			+ "	ON bankapp.customer_login.user_name1 = bankapp.customer.user_name";
 
 	
 	// Check to see if name is Available
 	private boolean isNameAv(String name) {
 		return name != null && !name.isEmpty();
+	}
+	public boolean isAcActive(String name) {
+		return emp == activate;
 	}
 	
 	public List<AccountModel> findAll(){
@@ -43,13 +48,13 @@ public class AccountDOA {
 			ResultSet rs1 = stmt.executeQuery(fullTable);
 			
 			while(rs1.next()) {
-				id = rs1.getInt("acc_id");
-				name = rs1.getString("cus_id");
+	//			id = rs1.getInt("acc_id");
+				name = rs1.getString("user_name");
 				customer = rs1.getString("name");
 				password = rs1.getString("password");
 				type = rs1.getString("Account_type");
-				balance = rs1.getInt("balance");
-				AccountModel a = new AccountModel(id, name, customer, password, type, balance);
+				balance = rs1.getFloat("balance");
+				AccountModel a = new AccountModel( name, customer, password, type, balance);
 				acc.add(a);
 			}
 				
@@ -65,9 +70,9 @@ public class AccountDOA {
 		try {
 				Connection con2 = DButil.getInstance().getConnection();
 				
-				String qry = accTable;
+				String qry = fullTable;
 				if (isNameAv(name)) {
-					qry += " where cus_id = ?";
+					qry += " where user_name = ?";
 				}
 				PreparedStatement prst = con2.prepareStatement(qry);
 				
@@ -78,12 +83,13 @@ public class AccountDOA {
 				ResultSet rset = prst.executeQuery();
 				
 				while(rset.next()) {
-					id = rset.getInt("acc_id");
-					name = rset.getString("cus_id");
+					emp = rset.getString("employee");
 					customer = rset.getString("name");
-					type = rset.getString("Account_type");
-					balance = rset.getInt("balance");
-					AccountModel a = new AccountModel(id, name, customer, password, type, balance);
+					name = rset.getString("user_name");
+					type = rset.getString("account_type");
+					balance = rset.getFloat("balance");
+					password = rset.getString("password");
+					AccountModel a = new AccountModel( name, customer, password, type, balance);
 					accSingle.add(a);
 				}
 		} catch (Exception e) {
@@ -98,22 +104,22 @@ public class AccountDOA {
 	public int addUser(AccountModel a) throws SQLException {
 		Connection con = DButil.getInstance().getConnection();
 
-		PreparedStatement prst = con.prepareStatement("insert into bankapp.customer_acc (name, cus_id, account_type, balance) values(?,?,?,?)");
-						
-		if (!accTable.contains(name)) {
-			prst.setString(2, a.getCustomer());
-			prst.setString(3, a.getName());
-			prst.setString(4, a.getType());
-			prst.setDouble(5, a.getBalance());
-
-		}	else {
-			System.out.println("User Name is already in use. "
-					+ "Choose another user name.");
-		}
+		PreparedStatement prst = con.prepareStatement("insert into bankapp.customer_login (user_name1,password, balance) values(?,?,?)");
+		PreparedStatement prst2 = con.prepareStatement("insert into bankapp.customer (user_name, name, account_type) values(?,?,?)\r\n");
 		
-		int insert1 = prst.executeUpdate();
-		return insert1;
-//		PreparedStatement prst = con2.prepareStatement("insert into bankapp.customer_login (user_name, password) value(?,?)");
+			// Apply for an account
+			prst2.setString(1, a.getCustomer());
+			prst2.setString(2, a.getName());
+			prst2.setString(3, a.getType());
+			// Add a deposit
+			prst.setString(2, a.getPassword());
+			prst.setFloat(3, a.getBalance());
+			prst.setString(1, a.getCustomer());
+		
+		int insert1 = prst2.executeUpdate();
+		int insert2= prst.executeUpdate();
+		return insert1+insert2;
+		
 
 	}
 	
@@ -121,54 +127,50 @@ public class AccountDOA {
 	public int addActive(AccountModel a) throws SQLException {
 		Connection con = DButil.getInstance().getConnection();
 		
-		PreparedStatement prst = con.prepareStatement("update bankapp.customer_acc set active = 'Y' where name = ?;");
+		PreparedStatement prst = con.prepareStatement("update bankapp.customer_login set active = 'Y' where user_name1 = ?;");
 		
-		prst.setString(1, name);
+		prst.setString(1, a.getCustomer());
 		
 		int insert = prst.executeUpdate();
 		
 		return (insert);
 	}
 	
-	public int updateB(AccountModel a) {
-		int insert =0;
-		try {
-			Connection con = DButil.getInstance().getConnection();
-			PreparedStatement prst = con.prepareStatement("update bankapp.customer_acc set balance where name = ?;");
-			prst.setString(1, name);
+	public int updateB(AccountModel a) throws SQLException {
+		
+		
+		Connection con = DButil.getInstance().getConnection();
+		PreparedStatement prst = con.prepareStatement("update bankapp.customer_login set balance = ? where user_name1 = ?");			
+		prst.setFloat(1, balance);
+		prst.setString(2, a.getCustomer());
 			
-			insert = prst.executeUpdate();
-		} catch (SQLException e) {
-			System.out.println("Unable to update account balance!");
-			e.printStackTrace();
-		}
+		int insert = prst.executeUpdate();
 		
 		return (insert);
 	}
 	
-	public List<AccountModel> login(String name, String password, String emp){
-		List<AccountModel> a = new ArrayList<AccountModel>();
+	public AModel login(String name, String password){
+		AModel ac = new AModel();
 		
 		try {
 			Connection con1 = DButil.getInstance().getConnection();
 			Statement stmt = con1.createStatement();
 			
-			ResultSet rs1 = stmt.executeQuery("select  * from bankapp.customer_login");
+			ResultSet rs1 = stmt.executeQuery(fullTable);
 			
 			while(rs1.next()) {
-				id = rs1.getInt("c_id");
-				name = rs1.getString("user_name");
+				id = rs1.getInt("acc_id");
+				name = rs1.getString("user_name1");
 				password = rs1.getString("password");
 				emp = rs1.getString("employee");
-				AccountModel am = new AccountModel();
-				a.add(am);
+				ac = new AModel(id,name,password,emp);
 			}
 				
 		} catch (SQLException e) {
 			System.out.println("Username or password is incorrect.");
 			e.printStackTrace();
 		}
-		return a;
+		return ac;
 	}
 
 }

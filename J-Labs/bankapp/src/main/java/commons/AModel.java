@@ -11,8 +11,8 @@ public class AModel {
 		super();
 	}
 	
-	public AModel(String name, String password, String emp) {
-		//this.id = id;
+	public AModel(int id, String name, String password, String emp) {
+		this.id = id;
 		this.name = name;
 		this.password = password;
 		this.emp = emp;

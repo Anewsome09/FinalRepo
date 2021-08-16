@@ -1,5 +1,6 @@
 package customer;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -16,13 +17,16 @@ public class Employee {
 	
 	private AccManager manage = new AccManager();
 
-	public void start() {
+	public void start() throws SQLException {
 		
 		Scanner in = new Scanner(System.in);
 		
+				
 		do {
+			
 			// Present Menu
 			viewMenu();
+			//login(in);
 			System.out.println("Select an option");
 			String input = in.next();
 
@@ -71,9 +75,17 @@ public class Employee {
 		System.out.println("6. Quit and close");
 	}
 	
+	private void viewMenu2() {
+		System.out.println("1. View Your Accounts");
+		System.out.println("1. View Your Transactions");
+		System.out.println("3. Apply for a New Account");
+		System.out.println("4. Make a Deposit");
+		System.out.println("5. Make a Withdraw");
+		System.out.println("6. Quit and close");
+	}
+		
 	//Option 1
 	private void viewAccount() {
-		
 		
 		List<AccountModel> accs = manage.findAll();
 		printAcc(accs);
@@ -93,20 +105,35 @@ public class Employee {
 	
 	// Option 3
 	private void addUser(Scanner in) {
+		List<AccountModel> accs = manage.findAll();
 		
-		String customer = getInp("Customer Name:",in);
-		String type = getInp("Checkings or Savings:",in);
+//		int id = 3;
 		String name = getInp("Username:",in);
+		String customer = getInp("Your name:", in);
+		String type = getInp("Checkings or Savings:",in);
+		// Employee adds account
 		String password = getInp("Password: ",in); 
-		String deposit = getInp("deposit:",in);
+		float balance = getDepo("deposit:",in);
 		//TODO: handle invalid input (for negative deposit)
-		AccountModel a = new AccountModel(4,customer,type,name,password,Double.parseDouble(deposit));
-		try {
-			manage.addUser(a);
+		AccountModel a = new AccountModel(customer,name,password,type,balance);
+		AccountModel b = new AccountModel(name,customer,type);
+		
+		if (!accs.contains(name)) {
+			try {
+				manage.addUser(a);
+			} catch (SQLException e) {
+				System.out.println("User could not be added.");
+				e.printStackTrace();
+			}
 			System.out.println("Added User Account");
-		} catch (Exception e) {
-			System.out.println("Error: unable to add user :"+e.getMessage());
+//			id++;
+		}	else {
+			System.out.println("User Name is already in use. "
+					+ "Choose another user name.");
 		}
+//		while (accs.isAcActive) {
+//			manage.addUser(a);
+//		}
 	}
 	
 	// Input for the Add Methods
@@ -115,9 +142,9 @@ public class Employee {
 		return in.next();
 	}
 	
-	private Double getDepo(String newUser, Scanner in) {
+	private float getDepo(String newUser, Scanner in) {
 		System.out.println(newUser);
-		return in.nextDouble();
+		return in.nextFloat();
 	}
 	
 	private void printAcc(List<AccountModel> b) {
@@ -130,37 +157,41 @@ public class Employee {
 	}
 	
 	//Option 4
-	private void deposit(Scanner in) {
+	private void deposit(Scanner in) throws SQLException {
 		
 		System.out.println("Enter the username of the account: ");
 		String name = in.next();
 		
 		System.out.println("Enter the amount to deposit: ");
-		double amount = in.nextDouble();
+		float amount = in.nextFloat();
 				
 		List<AccountModel> accs = manage.findAcc(name);
 		for(AccountModel a1 : accs) {
-				double balance = a1.getBalance()+amount;
-				a1.setBalance(balance);
+				float nBalance = a1.getBalance()+amount;
+				a1.setBalance(nBalance);
+//				manage.getTransactions();
 				printAcc(accs);
-//				manage.updateB(a1);
+				manage.updateB(a1);
 			}
 	}
 	
 	//Option 5
-	private void withdraw(Scanner in) {
+	private void withdraw(Scanner in) throws SQLException {
 		System.out.println("Enter the username of the account: ");
 		String name = in.next();
 		
 		System.out.println("Enter the amount to withdraw: ");
-		double amount = in.nextDouble();		
+		float amount = in.nextFloat();		
 		
 		List<AccountModel> accs = manage.findAcc(name);
 		for(AccountModel a : accs) {
-				double balance = a.getBalance()-amount;
-				a.setBalance(balance);
+				float nBalance = a.getBalance();
+				nBalance -= amount;
+				a.setBalance(nBalance);
+//				manage.getTransactions();
+				manage.updateB(a);
 				printAcc(accs);
-//				manage.updateB(a);
+				
 			}
 	}
 	
@@ -168,17 +199,21 @@ public class Employee {
 	public void login(Scanner in) {
 		
 		System.out.println("Enter the username of the account: ");
-		String name = in.next();
+		String sName = in.next();
 		
 		System.out.println("Enter the password: ");
-		String password = in.next();		
+		String sPassword = in.next();		
 		
-		List<AccountModel> am = manage.findAcc(name);
-		for(AccountModel a : am) {
-				if (password == a.getPasswordr()) {
-					System.out.printf(a.getCustomer(), a.getBalance());
-				} else System.out.println("Invalid input.");
-			}
+		AModel ac = manage.login(sName, sPassword);
 		
-	}
+		
+			if (sPassword.equals(ac.getPasswordr()) && ac.getEmp() == "Y") {
+					viewMenu();
+				}
+			else if(sPassword.equals(ac.getPasswordr()) && ac.getEmp() == "N") {
+					viewMenu2();
+				}
+			else System.out.println("Invalid password");
+		}	
+		
 }

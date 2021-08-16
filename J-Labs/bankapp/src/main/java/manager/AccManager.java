@@ -8,13 +8,13 @@ import commons.AccountModel;
 import doa.AccountDOA;
 
 public class AccManager {
-	double balance;
-	double transaction;
+	float balance;
+	float transaction;
 	String name;
 	String customer;
 	
 	private AccountDOA adoa= new AccountDOA();
-	private List<Double> transA;
+	private List<Float> transA;
 	
 	public List<AccountModel> findAll(){
 		return adoa.findAll();
@@ -30,15 +30,15 @@ public class AccManager {
 		return adoa.findAcc(name);
 	}
 	
-	public List<AccountModel> login(String name, String password){
-		return adoa.findAcc(name);
+	public AModel login(String name, String password){
+		return adoa.AModel;
 	}
 	
 	public int addUser(AccountModel a) throws SQLException{
 		return adoa.addUser(a);
 	}
 
-	public void deposit(double money) throws SQLException{
+	public void deposit(float money) throws SQLException{
 		if(money < 0) {
 			balance += money;
 			transaction = money;
@@ -46,7 +46,7 @@ public class AccManager {
 		
 	}
 	
-	public void withdraw(double money) throws SQLException{
+	public void withdraw(float money) throws SQLException{
 		if(money < 0) {
 			balance -= money;
 			transaction = -money;
@@ -63,10 +63,14 @@ public class AccManager {
 		}
 		
 		transA.add(balance);
+		System.out.println(transA);
 	}
 	
 	public int updateB(AccountModel a) throws SQLException {
 		return adoa.updateB(a);
-		
+	}
+	
+	public int addActive(AccountModel a) throws SQLException {
+		return adoa.addActive(a);
 	}
 }

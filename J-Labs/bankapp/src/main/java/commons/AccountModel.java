@@ -7,22 +7,24 @@ public class AccountModel {
 	private String name;
 	private String customer;
 	private String type;
-	private double balance;
+	private float balance;
 	private String password;
 	public String emp;
-	
+
+
 	public AccountModel() {
 		super();
 	}
 	
-	public AccountModel(String name) {
+	public AccountModel(String name, String customer, String type) {
 		super();
 		this.name = name;
+		this.customer = customer;
+		this.type = type;
 	}
 		
-	public AccountModel(int id, String name, String customer, String password, String type, double balance) {
+	public AccountModel(String name, String customer, String password, String type, float balance) {
 		super();
-		this.id = id;
 		this.name = name;
 		this.customer = customer;
 		this.password = password;
@@ -54,11 +56,11 @@ public class AccountModel {
 		this.type = type;
 	}
 
-	public double getBalance() {
+	public float getBalance() {
 		return balance;
 	}
 
-	public void setBalance(double balance) {
+	public void setBalance(float balance) {
 		this.balance = balance;
 	}
 
@@ -66,7 +68,7 @@ public class AccountModel {
 		return name;
 	}
 	
-	public String getPasswordr() {
+	public String getPassword() {
 		return password;
 	}
 
@@ -82,10 +84,4 @@ public class AccountModel {
 		this.name = name;
 	}
 	
-	public AccountModel(String name, String password, String emp) {
-		//this.id = id;
-		this.name = name;
-		this.password = password;
-		this.emp = emp;
-	}
 }
